@@ -36,7 +36,7 @@ export function Game() {
   const loading = status === "loading";
 
   return (
-    <div className="relative flex min-h-dvh flex-col">
+    <div className="app-shell">
       <div className="backdrop-deco" aria-hidden="true">
         <span />
         <span />
@@ -46,13 +46,13 @@ export function Game() {
 
       <Header soundOn={sound.enabled} onToggleSound={sound.toggle} onHome={status === "idle" ? undefined : resetGame} />
 
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center gap-3 px-4 pb-4 sm:gap-4 sm:pb-8">
+      <main className="app-main relative z-10 flex flex-1 flex-col items-center justify-center gap-3 px-4 pb-4 sm:gap-4 sm:pb-8">
         {status === "idle" && <StartScreen onStart={handleDraw} />}
 
         {status !== "idle" && (
           <>
             <h1 className="sr-only">Truth or Dare</h1>
-            <p className="h-6 flex-none text-sm font-semibold uppercase tracking-[0.2em] text-muted" aria-live="polite">
+            <p className="round-label h-6 flex-none text-sm font-semibold uppercase tracking-[0.2em] text-muted" aria-live="polite">
               {round > 0 && status === "ready" ? `Lá #${round}` : " "}
             </p>
 

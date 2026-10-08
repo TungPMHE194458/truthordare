@@ -5,12 +5,20 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
+  // WebKit workers are heavy; too many at once crash on Windows.
+  workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 2 : 0,
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    // iOS browsers (Safari and in-app browsers like Messenger) all use WebKit.
+    // reducedMotion: Playwright's WebKit build on Windows can stall its click
+    // "stable" check while the infinite hint pulse runs. Animations are covered by chromium.
+    { name: "mobile-webkit", use: { ...devices["iPhone 13"], reducedMotion: "reduce" } },
+  ],
   webServer: {
     command: `npm run build && npx next start -p ${PORT}`,
     url: `http://localhost:${PORT}`,

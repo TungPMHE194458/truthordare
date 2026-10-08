@@ -174,12 +174,16 @@ const longest = (type: "truth" | "dare") =>
     .reduce((a, b) => (b.content.length > a.content.length ? b : a));
 
 const VIEWPORTS = [
+  { width: 320, height: 460 }, // small phone with browser bars
   { width: 320, height: 568 },
   { width: 375, height: 667 },
   { width: 390, height: 844 },
   { width: 768, height: 1024 },
   { width: 1024, height: 768 },
   { width: 1440, height: 900 },
+  { width: 667, height: 375 }, // phones in landscape
+  { width: 844, height: 390 },
+  { width: 915, height: 412 },
 ];
 
 for (const viewport of VIEWPORTS) {
@@ -211,6 +215,7 @@ for (const viewport of VIEWPORTS) {
       return {
         horizontalScroll: root.scrollWidth > root.clientWidth,
         verticalScroll: root.scrollHeight > root.clientHeight,
+        cardHeight: card.height,
         cardInside: card.left >= 0 && card.right <= root.clientWidth && card.top >= 0 && card.bottom <= root.clientHeight,
         buttonBottom: button.getBoundingClientRect().bottom,
         buttonHeight: button.getBoundingClientRect().height,
@@ -221,6 +226,8 @@ for (const viewport of VIEWPORTS) {
     expect(metrics.horizontalScroll).toBe(false);
     expect(metrics.verticalScroll).toBe(false);
     expect(metrics.cardInside).toBe(true);
+    // Guards against the card collapsing to its padding (seen on iOS WebKit).
+    expect(metrics.cardHeight).toBeGreaterThan(200);
     expect(metrics.buttonBottom).toBeLessThanOrEqual(viewport.height);
     expect(metrics.buttonHeight).toBeGreaterThanOrEqual(44);
     expect(metrics.textOverflow).toBe(false);

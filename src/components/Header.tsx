@@ -19,7 +19,7 @@ function Wordmark() {
 
 export function Header({ soundOn, onToggleSound, onHome }: HeaderProps) {
   return (
-    <header className="relative z-10 mx-auto flex h-14 w-full flex-none max-w-5xl items-center justify-between px-4 sm:h-16">
+    <header className="app-header relative z-10 mx-auto flex h-14 w-full flex-none max-w-5xl items-center justify-between px-4 sm:h-16">
       {onHome ? (
         <button
           type="button"

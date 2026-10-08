@@ -78,8 +78,8 @@ Kiểm tra chất lượng:
 npm run typecheck      # tsc --noEmit
 npm run lint
 npm test               # unit test (Vitest)
-npx playwright install chromium   # lần đầu
-npm run test:e2e       # E2E: luồng chơi, bàn phím, lỗi/rỗng, 6 kích thước màn hình
+npx playwright install chromium webkit   # lần đầu
+npm run test:e2e       # E2E trên Chromium + iPhone (WebKit): luồng chơi, bàn phím, lỗi/rỗng, 10 kích thước màn hình kể cả xoay ngang
 ```
 
 ## Production build

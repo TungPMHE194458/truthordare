@@ -68,6 +68,7 @@ html {
 
 body {
   min-height: 100dvh;
+  overscroll-behavior-y: none;
   background:
     radial-gradient(60rem 40rem at -10% -10%, rgb(42 95 214 / 0.22), transparent 60%),
     radial-gradient(50rem 36rem at 110% 110%, rgb(201 58 36 / 0.2), transparent 60%),
@@ -76,12 +77,36 @@ body {
   font-family: var(--font-family-body);
 }
 
+/* Fallbacks for older mobile browsers (kept out of the main rules so the minifier keeps them). */
+@supports not (height: 1dvh) {
+  body,
+  .app-shell {
+    min-height: 100vh;
+  }
+}
+
+@supports not (font-size: 1cqh) {
+  .card-text {
+    font-size: 1.05rem;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
 @layer components {
+  /* Full-height column that stays clear of the notch and home indicator. */
+  .app-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+  }
+
   /* ---------- Desktop decoration ---------- */
   .backdrop-deco {
     display: none;
@@ -132,6 +157,7 @@ body {
       box-shadow 120ms ease-out;
     cursor: pointer;
     user-select: none;
+    touch-action: manipulation;
   }
 
   .btn-primary {
@@ -142,9 +168,25 @@ body {
       0 14px 30px -10px rgb(255 210 63 / 0.55);
   }
 
-  .btn-primary:hover:not([aria-disabled="true"]) {
-    background: var(--primary-hover);
-    transform: scale(1.03);
+  @media (hover: hover) {
+    .btn-primary:hover:not([aria-disabled="true"]) {
+      background: var(--primary-hover);
+      transform: scale(1.03);
+    }
+
+    .btn-ghost:hover {
+      background: var(--secondary-hover);
+      transform: scale(1.03);
+    }
+
+    .icon-btn:hover {
+      background: var(--secondary-hover);
+      transform: scale(1.05);
+    }
+
+    .card-half[data-revealed="false"]:hover {
+      background: color-mix(in oklab, var(--soft), var(--accent) 9%);
+    }
   }
 
   .btn-primary:active:not([aria-disabled="true"]) {
@@ -164,11 +206,6 @@ body {
     color: var(--foreground);
   }
 
-  .btn-ghost:hover {
-    background: var(--secondary-hover);
-    transform: scale(1.03);
-  }
-
   .btn-ghost:active {
     transform: scale(0.97);
   }
@@ -185,11 +222,7 @@ body {
       transform 120ms ease-out,
       background-color 120ms ease-out;
     cursor: pointer;
-  }
-
-  .icon-btn:hover {
-    background: var(--secondary-hover);
-    transform: scale(1.05);
+    touch-action: manipulation;
   }
 
   .icon-btn:active {
@@ -201,7 +234,8 @@ body {
   .card-slot {
     position: relative;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     flex: 1 1 0;
     width: 100%;
     min-height: 340px;
@@ -210,8 +244,11 @@ body {
 
   .card-shell {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     width: min(100%, 420px);
-    height: 100%;
     filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25)) drop-shadow(0 22px 34px rgb(0 0 0 / 0.45));
   }
 
@@ -226,7 +263,8 @@ body {
   .game-card {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     padding: 10px;
     border-radius: var(--card-radius);
     background: var(--card);
@@ -268,6 +306,9 @@ body {
     background: var(--soft);
     text-align: center;
     cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
     transition:
       background-color 150ms ease-out,
       transform 150ms ease-out;
@@ -276,10 +317,6 @@ body {
   .card-half[data-type="dare"] {
     --accent: var(--dare);
     --soft: var(--dare-soft);
-  }
-
-  .card-half[data-revealed="false"]:hover {
-    background: color-mix(in oklab, var(--soft), var(--accent) 9%);
   }
 
   .card-half[data-revealed="false"]:active {
@@ -341,6 +378,11 @@ body {
     justify-content: center;
     overflow-y: auto;
     scrollbar-width: none;
+  }
+
+  /* Blurred text never needs to scroll. */
+  .card-half[data-revealed="false"] .card-body {
+    overflow: hidden;
   }
 
   .card-text {
@@ -421,6 +463,135 @@ body {
 
   .card-fan {
     animation: fan-float 4s ease-in-out infinite;
+  }
+}
+
+/*
+ * Short screens: landscape phones and small phones with browser bars.
+ * Unlayered on purpose so these override Tailwind utility classes.
+ */
+@media (max-height: 560px) {
+  .app-header {
+    height: 3rem;
+  }
+
+  .app-main {
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .round-label {
+    height: 1.25rem;
+    font-size: 0.75rem;
+  }
+
+  .card-slot {
+    min-height: 220px;
+  }
+
+  .btn {
+    min-height: 46px;
+    font-size: 1.05rem;
+  }
+
+  .game-card {
+    padding: 8px;
+  }
+
+  .card-divider {
+    height: 14px;
+  }
+
+  .card-half {
+    gap: 0.3rem;
+    padding: 0.55rem 0.8rem;
+  }
+
+  .card-label {
+    min-height: 1.6rem;
+  }
+
+  .card-label-icon {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  .card-label-title {
+    font-size: 1.2rem;
+  }
+
+  .card-hint {
+    min-height: 1.5rem;
+    font-size: 0.78rem;
+  }
+
+  .start-fan {
+    width: 4.5rem;
+    height: 6rem;
+    margin-bottom: 1rem;
+  }
+
+  .start-fan .card-back {
+    border-width: 4px;
+    border-radius: 12px;
+  }
+
+  .start-fan .card-back span {
+    font-size: 1.9rem;
+  }
+
+  .start-title span {
+    display: inline;
+    font-size: 3rem;
+  }
+
+  .start-title .start-or {
+    margin: 0 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .start-tagline {
+    margin-top: 0.75rem;
+  }
+
+  .start-cta {
+    margin-top: 1rem;
+  }
+}
+
+/* Landscape phones: Truth and Dare side by side. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .card-slot {
+    max-height: none;
+  }
+
+  .card-shell {
+    width: min(100%, 760px);
+  }
+
+  .game-card {
+    flex-direction: row;
+    mask:
+      radial-gradient(circle var(--notch) at 50% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)) top / 100% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 50% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)) bottom / 100% 51% no-repeat;
+  }
+
+  .card-divider {
+    width: 14px;
+    height: auto;
+  }
+
+  .card-divider::before {
+    top: calc(var(--notch) + 6px);
+    bottom: calc(var(--notch) + 6px);
+    left: 50%;
+    right: auto;
+    border-top: 0;
+    border-left: 2px dashed var(--card-border);
+  }
+
+  .card-text {
+    font-size: clamp(0.92rem, min(6.5cqh, 2.6cqw), 1.2rem);
   }
 }
 
