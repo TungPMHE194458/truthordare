@@ -1,20 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Card, CardType } from "@/types/game";
+import type { Card, CardType, Mode } from "@/types/game";
 import { DareSection } from "./DareSection";
 import { TruthSection } from "./TruthSection";
 
 type GameCardProps = {
   truth: Card;
   dare: Card;
+  mode: Mode;
   truthRevealed: boolean;
   dareRevealed: boolean;
   leaving: boolean;
   onReveal: (type: CardType) => void;
 };
 
-export function GameCard({ truth, dare, truthRevealed, dareRevealed, leaving, onReveal }: GameCardProps) {
+export function GameCard({ truth, dare, mode, truthRevealed, dareRevealed, leaving, onReveal }: GameCardProps) {
   const truthRef = useRef<HTMLButtonElement>(null);
 
   // When the control that drew this card disappeared (e.g. the start button),
@@ -27,7 +28,7 @@ export function GameCard({ truth, dare, truthRevealed, dareRevealed, leaving, on
 
   return (
     <div className={`card-shell ${leaving ? "card-leave" : "card-enter"}`}>
-      <article className="game-card" aria-label="Lá bài Truth or Dare" aria-busy={leaving}>
+      <article className="game-card" data-mode={mode} aria-label="Lá bài Truth or Dare" aria-busy={leaving}>
         <TruthSection ref={truthRef} card={truth} revealed={truthRevealed} onReveal={onReveal} />
         <div className="card-divider" aria-hidden="true" />
         <DareSection card={dare} revealed={dareRevealed} onReveal={onReveal} />

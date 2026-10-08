@@ -1,8 +1,12 @@
 import { Volume2, VolumeX } from "lucide-react";
+import { getModeInfo } from "@/lib/modes";
+import type { Mode } from "@/types/game";
 
 type HeaderProps = {
+  mode: Mode;
   soundOn: boolean;
   onToggleSound: () => void;
+  onOpenModeSheet: () => void;
   /** When provided, the wordmark becomes a button back to the start screen. */
   onHome?: () => void;
 };
@@ -17,7 +21,9 @@ function Wordmark() {
   );
 }
 
-export function Header({ soundOn, onToggleSound, onHome }: HeaderProps) {
+export function Header({ mode, soundOn, onToggleSound, onOpenModeSheet, onHome }: HeaderProps) {
+  const modeInfo = getModeInfo(mode);
+
   return (
     <header className="app-header relative z-10 mx-auto flex h-14 w-full flex-none max-w-5xl items-center justify-between px-4 sm:h-16">
       {onHome ? (
@@ -33,16 +39,30 @@ export function Header({ soundOn, onToggleSound, onHome }: HeaderProps) {
         <Wordmark />
       )}
 
-      <button
-        type="button"
-        className="icon-btn"
-        onClick={onToggleSound}
-        aria-pressed={soundOn}
-        aria-label={soundOn ? "Âm thanh: bật" : "Âm thanh: tắt"}
-        title={soundOn ? "Tắt âm thanh" : "Bật âm thanh"}
-      >
-        {soundOn ? <Volume2 size={20} aria-hidden /> : <VolumeX size={20} aria-hidden />}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="icon-btn"
+          data-accent={modeInfo.accent}
+          onClick={onOpenModeSheet}
+          aria-haspopup="dialog"
+          aria-label={`Chế độ chơi: ${modeInfo.label}. Nhấn để đổi.`}
+          title={`Chế độ: ${modeInfo.label}`}
+        >
+          <modeInfo.Icon size={20} aria-hidden />
+        </button>
+
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={onToggleSound}
+          aria-pressed={soundOn}
+          aria-label={soundOn ? "Âm thanh: bật" : "Âm thanh: tắt"}
+          title={soundOn ? "Tắt âm thanh" : "Bật âm thanh"}
+        >
+          {soundOn ? <Volume2 size={20} aria-hidden /> : <VolumeX size={20} aria-hidden />}
+        </button>
+      </div>
     </header>
   );
 }

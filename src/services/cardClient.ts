@@ -37,9 +37,10 @@ function isRandomPairResponse(value: unknown): value is RandomPairResponse {
 export async function fetchRandomPair(
   history: Record<CardType, readonly string[]>,
   signal: AbortSignal,
-  filters: CardFilters = { language: DEFAULT_LANGUAGE },
+  filters: CardFilters = { language: DEFAULT_LANGUAGE, modes: ["default"] },
 ): Promise<DrawResult> {
-  const params = new URLSearchParams({ language: filters.language });
+  const params = new URLSearchParams({ language: filters.language, modes: filters.modes.join(",") });
+  if (filters.level) params.set("level", String(filters.level));
   if (filters.category) params.set("category", filters.category);
   if (filters.difficulty) params.set("difficulty", filters.difficulty);
   if (history.truth.length) params.set("excludeTruth", history.truth.join(","));

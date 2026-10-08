@@ -1,5 +1,5 @@
 import { pushHistory } from "@/utils/history";
-import type { CardType, GameState, RandomPairResponse } from "@/types/game";
+import type { GameState, Level, Mode, CardType, RandomPairResponse } from "@/types/game";
 
 export type GameAction =
   | { type: "DRAW_START" }
@@ -7,13 +7,19 @@ export type GameAction =
   | { type: "DRAW_FAILURE" }
   | { type: "DRAW_EMPTY" }
   | { type: "REVEAL"; target: CardType }
+  | { type: "SET_MODES"; modes: Mode[]; level: Level | null }
   | { type: "RESET" };
 
 export const EMPTY_HISTORY: GameState["history"] = { truth: [], dare: [] };
 
-export function createInitialGameState(history: GameState["history"] = EMPTY_HISTORY): GameState {
+export function createInitialGameState(
+  options: { modes?: Mode[]; level?: Level | null; history?: GameState["history"] } = {},
+): GameState {
+  const { modes = ["default"], level = null, history = EMPTY_HISTORY } = options;
   return {
     status: "idle",
+    modes,
+    level,
     currentTruth: null,
     currentDare: null,
     truthRevealed: false,
@@ -59,7 +65,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       return state.dareRevealed ? state : { ...state, dareRevealed: true };
 
+    case "SET_MODES":
+      // A new mode selection draws from a different pool, so recent-card history no longer applies.
+      return createInitialGameState({ modes: action.modes, level: action.level });
+
     case "RESET":
-      return createInitialGameState(state.history);
+      // Back to the start screen, but keep the current mode selection and dedupe history.
+      return createInitialGameState({ modes: state.modes, level: state.level, history: state.history });
   }
 }

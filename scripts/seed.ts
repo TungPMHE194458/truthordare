@@ -17,17 +17,21 @@ async function main() {
       category: card.category,
       difficulty: card.difficulty,
       language: card.language,
+      mode: card.mode,
+      level: card.level,
       is_active: card.isActive,
     }));
 
     await sql`
-      insert into cards ${sql(rows, "id", "type", "content", "category", "difficulty", "language", "is_active")}
+      insert into cards ${sql(rows, "id", "type", "content", "category", "difficulty", "language", "mode", "level", "is_active")}
       on conflict (id) do update set
         type       = excluded.type,
         content    = excluded.content,
         category   = excluded.category,
         difficulty = excluded.difficulty,
         language   = excluded.language,
+        mode       = excluded.mode,
+        level      = excluded.level,
         is_active  = excluded.is_active
     `;
     console.log(`seeded ${rows.length} cards`);

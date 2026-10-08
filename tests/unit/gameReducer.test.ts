@@ -8,6 +8,8 @@ const card = (id: string, type: Card["type"]): Card => ({
   content: `content ${id}`,
   category: "fun",
   difficulty: "easy",
+  mode: "default",
+  level: null,
 });
 
 const pair = (truthId: string, dareId: string, recycled = { truth: false, dare: false }): RandomPairResponse => ({
@@ -89,5 +91,39 @@ describe("gameReducer", () => {
     expect(reset.status).toBe("idle");
     expect(reset.currentTruth).toBeNull();
     expect(reset.history.truth).toEqual(["truth_001"]);
+  });
+
+  it("reset keeps the current mode selection and level", () => {
+    const inCoupleMode = gameReducer(ready(), { type: "SET_MODES", modes: ["couple"], level: 2 });
+    const drawn = gameReducer(inCoupleMode, { type: "DRAW_SUCCESS", payload: pair("truth_c1", "dare_c1") });
+    const reset = gameReducer(drawn, { type: "RESET" });
+    expect(reset.modes).toEqual(["couple"]);
+    expect(reset.level).toBe(2);
+    expect(reset.status).toBe("idle");
+  });
+
+  it("switching mode clears the card, history and round", () => {
+    const state = gameReducer(ready(), { type: "SET_MODES", modes: ["dark"], level: 4 });
+    expect(state.modes).toEqual(["dark"]);
+    expect(state.level).toBe(4);
+    expect(state.status).toBe("idle");
+    expect(state.currentTruth).toBeNull();
+    expect(state.currentDare).toBeNull();
+    expect(state.history).toEqual({ truth: [], dare: [] });
+    expect(state.round).toBe(0);
+  });
+
+  it("switching back to default mode clears the level", () => {
+    const inDarkMode = gameReducer(ready(), { type: "SET_MODES", modes: ["dark"], level: 1 });
+    const state = gameReducer(inDarkMode, { type: "SET_MODES", modes: ["default"], level: null });
+    expect(state.modes).toEqual(["default"]);
+    expect(state.level).toBeNull();
+  });
+
+  it("can select several modes at once, with no single level", () => {
+    const state = gameReducer(ready(), { type: "SET_MODES", modes: ["default", "couple"], level: null });
+    expect(state.modes).toEqual(["default", "couple"]);
+    expect(state.level).toBeNull();
+    expect(state.status).toBe("idle");
   });
 });

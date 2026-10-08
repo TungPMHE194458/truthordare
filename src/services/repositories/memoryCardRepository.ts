@@ -7,11 +7,14 @@ export function createMemoryCardRepository(cards: readonly CardRecord[]): CardRe
   return {
     async getRandom(type: CardType, filters: CardFilters, exclude: readonly string[]) {
       const excluded = new Set(exclude);
+      const modes = new Set(filters.modes);
       const pool = cards.filter(
         (card) =>
           card.isActive &&
           card.type === type &&
           card.language === filters.language &&
+          modes.has(card.mode) &&
+          (filters.level == null || card.level === filters.level) &&
           (!filters.category || card.category === filters.category) &&
           (!filters.difficulty || card.difficulty === filters.difficulty) &&
           !excluded.has(card.id),

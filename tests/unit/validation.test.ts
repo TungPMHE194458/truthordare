@@ -7,7 +7,7 @@ const query = (params: Record<string, string>) => parseRandomCardQuery(new URLSe
 describe("parseRandomCardQuery", () => {
   it("applies defaults", () => {
     expect(query({})).toEqual({
-      filters: { language: "vi", category: undefined, difficulty: undefined },
+      filters: { language: "vi", modes: ["default"], level: undefined, category: undefined, difficulty: undefined },
       exclude: { truth: [], dare: [] },
     });
   });
@@ -15,13 +15,28 @@ describe("parseRandomCardQuery", () => {
   it("parses filters and exclude lists", () => {
     const parsed = query({
       language: "en",
+      modes: "couple",
+      level: "3",
       category: "party",
       difficulty: "hard",
       excludeTruth: "truth_001, truth_002",
       excludeDare: "dare_003",
     });
-    expect(parsed?.filters).toEqual({ language: "en", category: "party", difficulty: "hard" });
+    expect(parsed?.filters).toEqual({ language: "en", modes: ["couple"], level: 3, category: "party", difficulty: "hard" });
     expect(parsed?.exclude).toEqual({ truth: ["truth_001", "truth_002"], dare: ["dare_003"] });
+  });
+
+  it("parses several comma-separated modes and dedupes them", () => {
+    const parsed = query({ modes: "default,couple,default" });
+    expect(parsed?.filters.modes).toEqual(["default", "couple"]);
+  });
+
+  it("drops a stray level when mode is default", () => {
+    expect(query({ modes: "default", level: "2" })?.filters.level).toBeUndefined();
+  });
+
+  it("drops level when several modes are selected, even a leveled one", () => {
+    expect(query({ modes: "couple,dark", level: "2" })?.filters.level).toBeUndefined();
   });
 
   it("ignores empty values", () => {
@@ -30,6 +45,10 @@ describe("parseRandomCardQuery", () => {
 
   it.each<Record<string, string>>([
     { language: "fr" },
+    { modes: "spicy" },
+    { modes: "default,spicy" },
+    { level: "5" },
+    { level: "0" },
     { category: "nope" },
     { difficulty: "extreme" },
     { excludeTruth: "'; drop table cards; --" },
@@ -47,6 +66,8 @@ describe("toPublicCard", () => {
     category: "fun",
     difficulty: "easy",
     language: "vi",
+    mode: "default",
+    level: null,
     isActive: true,
   };
 
@@ -57,7 +78,14 @@ describe("toPublicCard", () => {
       content: "Câu hỏi?",
       category: "fun",
       difficulty: "easy",
+      mode: "default",
+      level: null,
     });
+  });
+
+  it("carries the mode and level for leveled content", () => {
+    const leveled = { ...record, id: "truth_dark_001", mode: "dark", category: "18+", level: 3 };
+    expect(toPublicCard(leveled)).toMatchObject({ mode: "dark", level: 3 });
   });
 
   it.each<[string, unknown]>([
@@ -66,6 +94,8 @@ describe("toPublicCard", () => {
     ["missing content", { ...record, content: undefined }],
     ["bad type", { ...record, type: "joke" }],
     ["inactive", { ...record, isActive: false }],
+    ["bad mode", { ...record, mode: "spicy" }],
+    ["out-of-range level", { ...record, level: 5 }],
   ])("rejects %s", (_, value) => {
     expect(toPublicCard(value)).toBeNull();
   });

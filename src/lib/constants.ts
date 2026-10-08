@@ -21,4 +21,10 @@ export const HISTORY_STORAGE_KEY = "truode:history";
 /** Local storage key for the sound preference. */
 export const SOUND_STORAGE_KEY = "truode:sound";
 
+/** Local storage key for the selected mode + level. */
+export const MODE_STORAGE_KEY = "truode:mode";
+
+/** Local storage key for the Dark Mode 18+ consent confirmation. */
+export const DARK_CONSENT_STORAGE_KEY = "truode:darkConsent";
+
 export const ID_PATTERN = /^[a-z]+_[0-9a-z_-]+$/i;

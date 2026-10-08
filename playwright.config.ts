@@ -5,8 +5,9 @@ const PORT = 3100;
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
-  // WebKit workers are heavy; too many at once crash on Windows.
-  workers: process.env.CI ? 2 : 4,
+  // WebKit workers are heavy; too many at once crash on Windows, especially
+  // once chromium and mobile-webkit run side by side.
+  workers: process.env.CI ? 2 : 3,
   retries: process.env.CI ? 2 : 0,
   use: {
     baseURL: `http://localhost:${PORT}`,

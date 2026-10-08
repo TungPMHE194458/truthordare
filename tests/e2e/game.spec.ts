@@ -147,6 +147,117 @@ test("refresh returns to the start screen without errors", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+const modeCheckbox = (page: Page, label: string) => page.locator(".mode-option").filter({ hasText: label });
+const applyButton = (page: Page) => page.getByRole("button", { name: /Áp dụng/ });
+
+/** Opens the picker and leaves exactly `labels` checked (unchecks everything else first). */
+async function selectModes(page: Page, labels: string[]) {
+  await page.locator(".mode-pill, [aria-label*='Chế độ chơi']").first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  for (const info of await page.locator(".mode-option").all()) {
+    const label = (await info.locator(".mode-option-label").textContent())?.trim() ?? "";
+    const shouldBeChecked = labels.includes(label);
+    if ((await info.getAttribute("aria-checked")) !== String(shouldBeChecked)) await info.click();
+  }
+}
+
+test("checkboxes toggle independently and Apply is disabled with nothing selected", async ({ page }) => {
+  await page.goto("/");
+  await page.locator(".mode-pill").click();
+
+  const defaultBox = modeCheckbox(page, "Mặc định");
+  await expect(defaultBox).toHaveAttribute("aria-checked", "true");
+
+  await defaultBox.click();
+  await expect(defaultBox).toHaveAttribute("aria-checked", "false");
+  await expect(applyButton(page)).toBeDisabled();
+
+  await modeCheckbox(page, "Couple Mode").click();
+  await expect(applyButton(page)).toBeEnabled();
+});
+
+test("switches to Couple mode with no level step — it always mixes every stage", async ({ page }) => {
+  await page.goto("/");
+  await selectModes(page, ["Couple Mode"]);
+  await applyButton(page).click();
+  // Couple Mode has no level picker: Apply closes the sheet immediately.
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page.locator(".mode-pill")).toContainText("Couple Mode");
+  await expect(page.locator(".mode-pill")).not.toContainText("·");
+
+  await page.getByRole("button", { name: "Rút bài" }).click();
+  await expect(truthHalf(page)).toBeVisible();
+  await truthHalf(page).click();
+  await expect(truthText(page)).toHaveCSS("filter", "none");
+});
+
+test("a single leveled mode (Dark Mode) can mix all its levels instead of picking one", async ({ page }) => {
+  await page.goto("/");
+  // Picking Dark Mode for the first time always hits the 18+ gate first.
+  await selectModes(page, ["Dark Mode"]);
+  await expect(page.getByText("Xác nhận độ tuổi")).toBeVisible();
+  await page.getByRole("button", { name: "Tôi đã đủ 18 tuổi, tiếp tục" }).click();
+  await applyButton(page).click();
+  await page.locator(".level-option").filter({ hasText: "Tất cả cấp độ" }).click();
+  await expect(page.locator(".mode-pill")).toContainText("Dark Mode · Tất cả cấp độ");
+
+  await page.getByRole("button", { name: "Rút bài" }).click();
+  await expect(truthHalf(page)).toBeVisible();
+});
+
+test("selecting several modes at once skips the level step and mixes them", async ({ page }) => {
+  await page.goto("/");
+  await selectModes(page, ["Mặc định", "Couple Mode"]);
+  await applyButton(page).click();
+  // Two modes selected → no single mode to show levels for, applies immediately.
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page.locator(".mode-pill")).toContainText("Mặc định + Couple Mode");
+
+  await page.getByRole("button", { name: "Rút bài" }).click();
+  await expect(truthHalf(page)).toBeVisible();
+});
+
+test("Dark Mode requires an 18+ confirmation before it can be used", async ({ page }) => {
+  await page.goto("/");
+  await page.locator(".mode-pill").click();
+  await modeCheckbox(page, "Mặc định").click(); // uncheck the initial default selection
+  await modeCheckbox(page, "Dark Mode").click();
+
+  // Consent gate appears first; backing out must not silently check Dark Mode.
+  await expect(page.getByText("Xác nhận độ tuổi")).toBeVisible();
+  await page.getByRole("button", { name: "Quay lại", exact: true }).click();
+  await expect(modeCheckbox(page, "Dark Mode")).toHaveAttribute("aria-checked", "false");
+  await page.getByRole("button", { name: "Đóng" }).click();
+  await expect(page.locator(".mode-pill")).toContainText("Mặc định");
+
+  // Confirming consent checks the box and unlocks the level picker; the choice sticks afterwards.
+  await selectModes(page, ["Dark Mode"]);
+  await page.getByRole("button", { name: "Tôi đã đủ 18 tuổi, tiếp tục" }).click();
+  await expect(modeCheckbox(page, "Dark Mode")).toHaveAttribute("aria-checked", "true");
+  await applyButton(page).click();
+  await page.locator(".level-option").filter({ hasText: "Tease" }).click();
+  await expect(page.locator(".mode-pill")).toContainText("Dark Mode");
+
+  await page.locator(".mode-pill").click();
+  await expect(page.getByText("Xác nhận độ tuổi")).toBeHidden();
+});
+
+test("switching mode sends the player back to the start screen with the picker usable via keyboard", async ({ page }) => {
+  await startGame(page);
+  await page.getByRole("button", { name: /Chế độ chơi/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
+
+  await selectModes(page, ["Couple Mode"]);
+  await applyButton(page).click();
+  // Couple Mode has no level step, so Apply alone closes the sheet.
+
+  // Back on the start screen for the new mode — the previous card is gone.
+  await expect(page.getByRole("button", { name: "Rút bài" })).toBeVisible();
+  await expect(truthHalf(page)).toBeHidden();
+});
+
 test("sound is off by default and the choice persists", async ({ page }) => {
   await page.goto("/");
   const toggle = page.getByRole("button", { name: /Âm thanh/ });
