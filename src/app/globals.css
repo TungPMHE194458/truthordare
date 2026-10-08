@@ -1,0 +1,516 @@
+@import "tailwindcss";
+
+:root {
+  --background: #15121f;
+  --foreground: #f6f3ff;
+  --muted: #a7a1c2;
+  --secondary: #262237;
+  --secondary-hover: #312c47;
+
+  --card: #fffaf2;
+  --card-fg: #1f1b2d;
+  --card-muted: #625b70;
+  --card-border: #e6dccb;
+
+  --truth-light: #8fb0ff;
+  --dare-light: #ff9a85;
+  --card-sunken: #f1eadf;
+
+  --truth: #2a5fd6;
+  --truth-soft: #e9efff;
+  --dare: #c93a24;
+  --dare-soft: #ffece6;
+
+  --primary: #ffd23f;
+  --primary-hover: #ffdb63;
+  --primary-fg: #1f1b2d;
+  --focus-ring: #ffd23f;
+
+  /* Motion — keep in sync with src/lib/constants.ts */
+  --card-exit-ms: 200ms;
+  --card-enter-ms: 350ms;
+  --reveal-ms: 400ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --font-family-body: var(--font-be-vietnam), system-ui, sans-serif;
+  --font-family-display: var(--font-baloo), var(--font-be-vietnam), system-ui, sans-serif;
+
+  --blur: 10px;
+  --card-radius: 28px;
+  --half-radius: 20px;
+  --notch: 12px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-secondary: var(--secondary);
+  --color-card: var(--card);
+  --color-card-fg: var(--card-fg);
+  --color-card-muted: var(--card-muted);
+  --color-card-sunken: var(--card-sunken);
+  --color-truth-light: var(--truth-light);
+  --color-dare-light: var(--dare-light);
+  --color-truth: var(--truth);
+  --color-dare: var(--dare);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --font-sans: var(--font-family-body);
+  --font-display: var(--font-family-display);
+}
+
+html {
+  background: var(--background);
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(60rem 40rem at -10% -10%, rgb(42 95 214 / 0.22), transparent 60%),
+    radial-gradient(50rem 36rem at 110% 110%, rgb(201 58 36 / 0.2), transparent 60%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-family-body);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+@layer components {
+  /* ---------- Desktop decoration ---------- */
+  .backdrop-deco {
+    display: none;
+  }
+
+  @media (min-width: 1024px) {
+    .backdrop-deco {
+      display: block;
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .backdrop-deco span {
+      position: absolute;
+      width: 220px;
+      height: 310px;
+      border-radius: 26px;
+      border: 2px solid rgb(255 255 255 / 0.06);
+      background: rgb(255 255 255 / 0.02);
+    }
+
+    .backdrop-deco span:nth-child(1) { left: 6%; top: 14%; rotate: -14deg; }
+    .backdrop-deco span:nth-child(2) { left: 11%; top: 52%; rotate: 8deg; }
+    .backdrop-deco span:nth-child(3) { right: 7%; top: 10%; rotate: 12deg; }
+    .backdrop-deco span:nth-child(4) { right: 12%; top: 50%; rotate: -9deg; }
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 52px;
+    padding: 0 1.75rem;
+    border-radius: 999px;
+    font-family: var(--font-family-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    letter-spacing: 0.02em;
+    transition:
+      transform 120ms ease-out,
+      background-color 120ms ease-out,
+      box-shadow 120ms ease-out;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: var(--primary-fg);
+    box-shadow:
+      0 4px 0 #c99a10,
+      0 14px 30px -10px rgb(255 210 63 / 0.55);
+  }
+
+  .btn-primary:hover:not([aria-disabled="true"]) {
+    background: var(--primary-hover);
+    transform: scale(1.03);
+  }
+
+  .btn-primary:active:not([aria-disabled="true"]) {
+    transform: translateY(3px) scale(0.98);
+    box-shadow:
+      0 1px 0 #c99a10,
+      0 8px 20px -10px rgb(255 210 63 / 0.55);
+  }
+
+  .btn-primary[aria-disabled="true"] {
+    cursor: progress;
+    opacity: 0.75;
+  }
+
+  .btn-ghost {
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+
+  .btn-ghost:hover {
+    background: var(--secondary-hover);
+    transform: scale(1.03);
+  }
+
+  .btn-ghost:active {
+    transform: scale(0.97);
+  }
+
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--foreground);
+    transition:
+      transform 120ms ease-out,
+      background-color 120ms ease-out;
+    cursor: pointer;
+  }
+
+  .icon-btn:hover {
+    background: var(--secondary-hover);
+    transform: scale(1.05);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* ---------- Card ---------- */
+  /* Takes the vertical space left between the round label and the button. */
+  .card-slot {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    flex: 1 1 0;
+    width: 100%;
+    min-height: 340px;
+    max-height: 600px;
+  }
+
+  .card-shell {
+    position: relative;
+    width: min(100%, 420px);
+    height: 100%;
+    filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25)) drop-shadow(0 22px 34px rgb(0 0 0 / 0.45));
+  }
+
+  .card-enter {
+    animation: card-enter var(--card-enter-ms) var(--ease-out) both;
+  }
+
+  .card-leave {
+    animation: card-leave var(--card-exit-ms) ease-in forwards;
+  }
+
+  .game-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 10px;
+    border-radius: var(--card-radius);
+    background: var(--card);
+    color: var(--card-fg);
+    container-type: size;
+    /* Ticket notches on both sides of the divider */
+    mask:
+      radial-gradient(circle var(--notch) at 0 50%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)) left / 51% 100% no-repeat,
+      radial-gradient(circle var(--notch) at 100% 50%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)) right / 51% 100% no-repeat;
+  }
+
+  .card-divider {
+    position: relative;
+    flex: none;
+    height: 18px;
+  }
+
+  .card-divider::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--notch) + 6px);
+    right: calc(var(--notch) + 6px);
+    top: 50%;
+    border-top: 2px dashed var(--card-border);
+  }
+
+  .card-half {
+    --accent: var(--truth);
+    --soft: var(--truth-soft);
+    position: relative;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--half-radius);
+    background: var(--soft);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background-color 150ms ease-out,
+      transform 150ms ease-out;
+  }
+
+  .card-half[data-type="dare"] {
+    --accent: var(--dare);
+    --soft: var(--dare-soft);
+  }
+
+  .card-half[data-revealed="false"]:hover {
+    background: color-mix(in oklab, var(--soft), var(--accent) 9%);
+  }
+
+  .card-half[data-revealed="false"]:active {
+    transform: scale(0.985);
+  }
+
+  .card-half[data-revealed="true"] {
+    cursor: default;
+  }
+
+  .card-half:focus-visible {
+    outline: 3px solid var(--card-fg);
+    outline-offset: -3px;
+  }
+
+  .card-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+    min-height: 1.85rem;
+  }
+
+  .card-label-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .card-label-title {
+    font-family: var(--font-family-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+    line-height: 1;
+    padding-top: 0.15em;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+
+  .card-label-sub {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--card-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .card-text {
+    margin: auto 0;
+    max-width: 30ch;
+    /* Scales with the card itself so long prompts fit small phones. */
+    font-size: clamp(0.92rem, min(4.1cqh, 5.4cqw), 1.3rem);
+    font-weight: 600;
+    line-height: 1.38;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    transition:
+      filter var(--reveal-ms) var(--ease-out),
+      opacity var(--reveal-ms) var(--ease-out),
+      transform var(--reveal-ms) var(--ease-out);
+  }
+
+  .card-text[data-revealed="false"] {
+    filter: blur(var(--blur));
+    opacity: 0.55;
+    transform: scale(0.98);
+    user-select: none;
+  }
+
+  .card-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: none;
+    min-height: 1.75rem;
+    padding: 0 0.85rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .card-hint {
+    background: var(--accent);
+    color: #fff;
+    animation: hint-pulse 2.4s ease-in-out infinite;
+  }
+
+  .card-check {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    background: var(--card-fg);
+    color: var(--card);
+    animation: fade-in var(--reveal-ms) var(--ease-out) both;
+  }
+
+  /* ---------- Skeleton & status panels ---------- */
+  .skeleton-half {
+    flex: 1 1 0;
+    border-radius: var(--half-radius);
+    background: linear-gradient(100deg, var(--card-sunken) 30%, var(--card) 50%, var(--card-sunken) 70%) 0 0 / 300% 100%;
+    animation: shimmer 1.3s linear infinite;
+  }
+
+  .delayed-fade-in {
+    animation: fade-in 200ms ease-out 250ms both;
+  }
+
+  /* ---------- Start screen card backs ---------- */
+  .card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    border: 6px solid var(--card);
+    background:
+      repeating-linear-gradient(45deg, rgb(255 255 255 / 0.12) 0 6px, transparent 6px 14px),
+      linear-gradient(160deg, var(--truth), var(--dare));
+    box-shadow: 0 14px 30px -10px rgb(0 0 0 / 0.6);
+  }
+
+  .card-fan {
+    animation: fan-float 4s ease-in-out infinite;
+  }
+}
+
+@keyframes card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes card-leave {
+  to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -300% 0;
+  }
+}
+
+@keyframes hint-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fan-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card-enter,
+  .card-leave,
+  .delayed-fade-in {
+    animation-name: fade-in;
+  }
+
+  .card-leave {
+    animation-direction: reverse;
+  }
+
+  .card-text,
+  .card-text[data-revealed="false"] {
+    transform: none;
+  }
+
+  .card-hint,
+  .card-fan,
+  .skeleton-half {
+    animation: none;
+  }
+
+  .btn:hover,
+  .btn:active,
+  .icon-btn:hover,
+  .icon-btn:active,
+  .card-half:active {
+    transform: none !important;
+  }
+}
